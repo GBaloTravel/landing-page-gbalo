@@ -1,0 +1,23 @@
+FROM node:lts-slim AS deps
+WORKDIR /app
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+ENV npm_config_ignore_scripts=true
+RUN --mount=type=cache,target=/root/.npm \
+    npm i
+COPY . .
+ENV NODE_OPTIONS=--max-old-space-size=2048
+ENV NEXT_PRIVATE_MAX_WORKERS=2
+RUN npm run build
+
+FROM node:18-alpine AS runner
+WORKDIR /app
+RUN adduser -D -h /home/gbalo-nextjs -s /bin/sh gbalo-nextjs
+
+COPY  --chown=gbalo-nextjs:gbalo-nextjs --chmod=700 --from=deps /app/.next/standalone ./
+COPY  --chown=gbalo-nextjs:gbalo-nextjs --chmod=700 --from=deps /app/.next/static ./.next/static
+COPY  --chown=gbalo-nextjs:gbalo-nextjs --chmod=700 --from=deps /app/public ./public
+
+RUN chmod +x server.js
+
+USER gbalo-nextjs
+CMD ["node", "server.js"]
