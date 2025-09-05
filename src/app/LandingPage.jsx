@@ -1,5 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
+import throttle from "lodash/throttle";
+import { useEffect, useState } from "react";
 // --- Simple runtime smoke tests to avoid silent breakage ---
 function runSmokeTests(data) {
   try {
@@ -19,11 +21,23 @@ function runSmokeTests(data) {
 }
 
 export default function LandingPage() {
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = throttle(() => {
+      const triggerPoint = document.body.scrollHeight * 0.2;
+      setShowScrollTop(window.scrollY > triggerPoint);
+    }, 200); 
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   const imgs = {
-    goldenBridge: "https://images.unsplash.com/photo-1587496679742-4a5d3ef5efb1?q=80&w=1600&auto=format&fit=crop",
-    bana: "https://images.unsplash.com/photo-1623165396564-92d663b29396?q=80&w=1600&auto=format&fit=crop",
-    hoianLanterns: "https://images.unsplash.com/photo-1558980664-10eaaff6e2bd?q=80&w=1600&auto=format&fit=crop",
-    hoianBoat: "https://images.unsplash.com/photo-1612151901106-e1d60e5cc8b7?q=80&w=1600&auto=format&fit=crop",
+    goldenBridge: "./cauvang1.jpg",
+    bana: "./captreo.jpeg",
+    hoianLanterns: "./hoian.png",
+    hoianBoat: "./thuyenthung.jpg",
   };
 
   const plans = [
@@ -122,33 +136,41 @@ export default function LandingPage() {
     <div className="min-h-screen w-full bg-gradient-to-br from-[#0b1220] via-[#0b1220] to-[#0f1f3a] text-white">
       {/* Topbar */}
       <div className="sticky top-0 z-40 border-b border-white/10 backdrop-blur bg-[#0b1220]/70">
-        <div className="max-w-6xl mx-auto flex items-center justify-between py-3 px-4">
+        <div className="max-w-6xl mx-auto flex items-center justify-between py-3 px-4 gap-6">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-sm text-white/80">Private Tour 4N3Đ — Đà Nẵng • Bà Nà • Hội An</span>
           </div>
-          <nav className="hidden md:flex items-center gap-6 text-sm text-white/70">
+          <nav className="hidden md:flex items-center gap-6 text-sm text-white/70 flex-1 justify-center">
             <a href="#why" className="hover:text-white">Điểm khác biệt</a>
             <a href="#gallery" className="hover:text-white">Hình ảnh</a>
             <a href="#itinerary" className="hover:text-white">Lịch trình</a>
             <a href="#pricing" className="hover:text-white">Bảng giá</a>
             <a href="#faq" className="hover:text-white">FAQ</a>
           </nav>
-          <a href="#pricing" className="rounded-xl bg-emerald-400 text-black text-sm font-semibold px-4 py-2 hover:bg-emerald-300">Giữ chỗ ngay</a>
+          {/* Right button */}
+          <div className="flex justify-end flex-1 min-w-max">
+            <a
+              href="#pricing"
+              className="rounded-xl bg-emerald-400 text-black text-sm font-semibold px-4 py-2 hover:bg-emerald-300 md:w-auto text-center"
+            >
+              Giữ chỗ ngay
+            </a>
+          </div>
         </div>
       </div>
 
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
-          <img src={imgs.goldenBridge} alt="Cầu Vàng Đà Nẵng" className="w-full h-full object-cover opacity-60" />
+          <img src={imgs.goldenBridge} alt="Cầu Vàng Đà Nẵng" className="w-full h-full object-cover opacity-90" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-[#0b1220]/60 to-[#0b1220]" />
         </div>
         <div className="relative max-w-6xl mx-auto px-4 py-16 md:py-24">
-          <motion.h1 initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:0.6}} className="text-3xl md:text-5xl font-bold leading-tight">
+          <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-3xl md:text-5xl font-bold leading-tight">
             Trọn gói an tâm cho gia đình – <span className="text-emerald-400">Riêng tư tuyệt đối</span>
           </motion.h1>
-          <motion.p initial={{opacity:0,y:20}} animate={{opacity:1,y:0}} transition={{duration:0.7}} className="mt-4 text-white/80 max-w-2xl">
+          <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="mt-4 text-white/80 max-w-2xl">
             Không bán tour. Chúng tôi bán <b>giải pháp</b>: xe riêng, khách sạn 4★, ngủ đêm Bà Nà, trải nghiệm bản địa <b>thuyền thúng + làm gốm</b>, SIM 5G mỗi người, đón Thái tại sân bay & hỗ trợ LINE 24/7.
           </motion.p>
           <div className="mt-6 flex flex-wrap gap-3">
@@ -184,15 +206,15 @@ export default function LandingPage() {
         <h2 className="text-2xl md:text-3xl font-bold mb-6">Hình ảnh nổi bật</h2>
         <div className="grid md:grid-cols-3 gap-4">
           <div className="relative rounded-3xl overflow-hidden">
-            <img src={imgs.goldenBridge} alt="Cầu Vàng" className="w-full h-64 md:h-72 object-cover"/>
+            <img src={imgs.goldenBridge} alt="Cầu Vàng" className="w-full h-64 md:h-72 object-cover" />
             <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-sm">Cầu Vàng – Đà Nẵng</div>
           </div>
           <div className="relative rounded-3xl overflow-hidden">
-            <img src={imgs.bana} alt="Bà Nà Hills" className="w-full h-64 md:h-72 object-cover"/>
+            <img src={imgs.bana} alt="Bà Nà Hills" className="w-full h-64 md:h-72 object-cover" />
             <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-sm">Bà Nà Hills – Cáp treo & biển mây</div>
           </div>
           <div className="relative rounded-3xl overflow-hidden">
-            <img src={imgs.hoianLanterns} alt="Hội An" className="w-full h-64 md:h-72 object-cover"/>
+            <img src={imgs.hoianLanterns} alt="Hội An" className="w-full h-64 md:h-72 object-cover" />
             <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent text-sm">Phố cổ Hội An – đèn lồng</div>
           </div>
         </div>
@@ -210,7 +232,7 @@ export default function LandingPage() {
             </div>
           ))}
           <div className="rounded-3xl border border-white/10 bg-white/5 p-0 overflow-hidden md:row-span-2">
-            <img src={imgs.hoianBoat} alt="Thuyền thúng Cẩm Thanh" className="w-full h-full object-cover"/>
+            <img src={imgs.hoianBoat} alt="Thuyền thúng Cẩm Thanh" className="w-full h-full object-cover" />
           </div>
         </div>
       </section>
@@ -252,7 +274,7 @@ export default function LandingPage() {
                 {plan.includes.map((item, idx) => (
                   <div key={idx} className="flex items-start gap-2 text-sm">
                     <span className="mt-1 h-4 w-4 rounded-full bg-emerald-400/20 border border-emerald-300/40 flex items-center justify-center">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                     </span>
                     <span className="text-white/90">{item}</span>
                   </div>
@@ -369,6 +391,25 @@ export default function LandingPage() {
       <footer className="max-w-6xl mx-auto text-center py-10 text-xs text-white/50">
         Giá có thể thay đổi theo mùa cao điểm/lễ. Vui lòng liên hệ để được tư vấn lộ trình cá nhân hoá.
       </footer>
+      {showScrollTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-20 right-6 z-50 flex items-center justify-center w-12 h-12 rounded-full 
+               bg-emerald-400 shadow-[0_0_0_4px_rgba(180,160,255,0.25)] hover:bg-emerald-800 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-5 h-5 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+      )}
+
     </div>
   );
 }
